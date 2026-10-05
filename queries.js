@@ -19,9 +19,18 @@ const getUsers = async (request, response) => {
 const getUserById = async (request, response) => {
   const id = parseInt(request.params.id, 10)
 
+  if (Number.isNaN(id)) {
+    return response.status(400).json({ error: 'Invalid user ID' })
+  }
+
   try {
     const results = await pool.query('SELECT * FROM users WHERE id = $1', [id])
-    response.status(200).json(results.rows)
+
+    if (results.rowCount === 0) {
+      return response.status(404).json({ error: 'User not found' })
+    }
+
+    response.status(200).json(results.rows[0])
   } catch (error) {
     throw error
   }
